@@ -6,19 +6,18 @@
 console.log("starting the new  project nodejs")
 
 const express = require('express');
-
+const { connectDB }  =require("./config/database")
 const app = express();
 
 
 // get will make only get call 
 
+// req is /user it will match /user, /user/xyz, /user/sdkhbks etc
 app.get("/user",(req,res)=>{
+console.log("checked")
+res.send("response1 ");
 
-    res.send({
-        name:"Aish",
-        age:31,
-        place:"Bhopal"
-    });
+console.log("second")
 })
 
 app.post("/user",(req,res)=>{
@@ -55,7 +54,34 @@ app.use("/",(req,res)=>{
 
 
 
+// making some advance routes 
 
-app.listen(3001,()=>{
-    console.log("server is running ")
+app.get("/abc",(req,res)=>{
+    res.send({
+        firstname:"king",
+        lastName:"kohil"
+    })
 });
+
+// so reguler expressions works here 
+
+app.get("/ab?c",(req,res)=>{
+    res.send({
+        firstname:"king",
+        lastName:"kohil"
+    })
+});
+
+
+// so match the patter over here 
+
+connectDB().then(()=>{
+    console.log("successfully connected")
+    app.listen(3001,()=>{
+        console.log("server is running ")
+    });
+
+}).catch( err =>{
+    console.log(err)
+})
+
