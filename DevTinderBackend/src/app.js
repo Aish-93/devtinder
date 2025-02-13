@@ -74,12 +74,12 @@ app.get("/ab?c",(req,res)=>{
 
 
 // so match the patter over here 
-
+// first databse should be connected then server should start hitting 
 connectDB().then(()=>{
     console.log("successfully connected")
     app.listen(3001,()=>{
         console.log("server is running ")
-    });
+    });// this will connect the database
 
 }).catch( err =>{
     console.log(err)
