@@ -7,13 +7,22 @@
 
 const express = require("express");
 const { connectDB } = require("./config/database");
+const bcrypt = require('bcrypt')
 const app = express();
-
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 // express.json middlle ware will be activated to all thr routes  by
 
 app.use(express.json());
+app.use(cookieParser());
 
 const User = require("./models/user");
+
+
+const  validateSignUpData  = require("./utils/validation");
+const emailValidtaor = require("./utils/validation");
+
+
 
 // get will make only get call
 
@@ -87,27 +96,31 @@ User.createIndexes()
   });
 
 app.post("/signup", async (req, res) => {
-  console.log("request", req.body);
-  
+  console.log(req,"req")
+
+  try { 
+    //  validateSignUpData(req)
   // creating a new instance of the user model
   const {firstName, lastName, emailId, password } = req.body;
 
-  const user = new User(req.body);
-//   console.log(user);
+  console.log(req.body,"reqbody")
+  const passwordHash = await bcrypt.hash(password,10);
+  console.log(passwordHash,"hash");
+  // creating new instanceof user model
+  const user = new User({
+    firstName,
+    lastName,
+    emailId,
+    password:passwordHash
+  });
 
-  try {
-    
-    // const existingUser = await User.findOne({emailId });
-    // if (existingUser) {
-    //   return res.status(400).send("Email already exist, please try unique one");
-    // }
     await user.save();
     res.send("user added successfully");
   } catch (err) {
     if (err.code === 1100) {
       res.status(400).send("Duplicate email found");
     } else {
-      res.status("400").send("error in posting data " + err.message);
+      res.status(400).send("error in posting data " + err.message);
     }
   }
 });
@@ -215,6 +228,88 @@ app.patch("/update/:id", async (req, res) => {
   }
 });
 
+app.post("/login", async( req,res ) =>{
+
+  // will take the emil id and password and validate from data base the password is valid or not mean decrypt the password
+  // "firstName": "varun",
+  // "lastName": "Chrkraborty",
+  // "emailId": "varunckb@gmail.com",
+  // "password": "varun6Aish%^&*"
+
+  // "firstName": "Axar",
+  //   "lastName": "Patel",
+  //   "emailId": "patelAxar@gmail.com",
+  //   "password": "patel6Aish%^&*"
+
+  const { emailId,password} = req.body;
+
+  const validationBoolean = emailValidtaor(emailId)
+  
+  try{
+    
+    const user = await User.findOne({emailId:emailId});
+
+    if(!user){
+        throw new Error("Invalid credantials");
+    }
+
+    const isValidPassword = await bcrypt.compare(password,user.password);
+    if(isValidPassword){
+
+      // we are setting up a token  sending in response 
+      // sign { hidden data } , secert key 
+      const token = await jwt.sign({
+        _id:user._id
+      },"Aish@rocky@00");
+
+      res.cookie("token",token)
+
+      res.send("Welcome user : " + user.firstName + " login successful!!")
+    }else{
+      throw new Error("Entered password is invalid")
+    }
+
+  }catch (err) {
+    
+      res.status(400).send("error in posting data " + err.message);
+    
+  }
+})
+
+// profile api 
+
+app.get("/profile", async (req,res) =>{
+
+try {
+  const cookie = req.cookies;
+  console.log(cookie, "cookeis");
+
+  const { token } = cookie;
+  // validate the token
+  // if(true){
+  if(!token){
+    throw new Error ("Invalid token");
+  }
+ 
+
+  const decodedDataBack = await jwt.verify(token, "Aish@rocky@00");
+
+
+  const user = await User.findById(decodedDataBack._id)
+  if(!user){
+    throw new Error("try login again!!")
+  }
+  res.send(user);
+} catch (err) {
+  res.status(400).send("error in posting data " + err.message);
+}
+// }
+// else{
+  // res.status(400).send("login again")
+// }
+// res.send("Just reading cookie..")
+
+})
 connectDB()
   .then(() => {
     console.log("successfully connected");

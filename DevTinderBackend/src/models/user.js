@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const validator = require('validator');
+
 // creating a schema
 const userSchema = new mongoose.Schema({
 
@@ -20,7 +22,13 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
+    validate(value){
+
+      if(!validator.isEmail(value)){
+        throw new Error("Entered email is not valid")
+      }
+    }
   },
   password:{
     type: String,
@@ -41,7 +49,13 @@ const userSchema = new mongoose.Schema({
   photoUrl:{
 
     type:String,
-    default:"https://www.shutterstock.com/image-vector/vector-design-avatar-dummy-sign-600nw-1290556063.jpg"
+    default:"https://www.shutterstock.com/image-vector/vector-design-avatar-dummy-sign-600nw-1290556063.jpg",
+    validate(value){
+
+      if(!validator.isURL(value)){
+        throw new Error("Entered url is not valid")
+      }
+    }
   },
   about:{
     type:String,
