@@ -6,6 +6,7 @@ const connectionRequestSchema = new mongoose.Schema({
 
     fromUserId:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
         required: true,
     },
 
@@ -37,7 +38,7 @@ connectionRequestSchema.pre("save", function(next){
     const connectionRequest = this;
     // we are using this so we will never uae arrow function 
      // if to and from is is same c
-     console.log(connectionRequest,"check")
+     
 
      if( connectionRequest.fromUserId.equals(connectionRequest.toUserId)){
         throw new Error("Cannot send request to oneself!!!")

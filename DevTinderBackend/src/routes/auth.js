@@ -7,8 +7,7 @@ const  validateSignUpData  = require("../utils/validation");
 const emailValidtaor = require("../utils/validation");
 
 authRouter.post("/signup", async (req, res) => {
-    console.log(req,"req")
-  
+    
     try { 
       //  validateSignUpData(req)
     // creating a new instance of the user model
@@ -39,15 +38,7 @@ authRouter.post("/signup", async (req, res) => {
 authRouter.post("/login", async( req,res ) =>{
 
     // will take the emil id and password and validate from data base the password is valid or not mean decrypt the password
-    // "firstName": "varun",
-    // "lastName": "Chrkraborty",
-    // "emailId": "varunckb@gmail.com",
-    // "password": "varun6Aish%^&*"
   
-    // "firstName": "Axar",
-    //   "lastName": "Patel",
-    //   "emailId": "patelAxar@gmail.com",
-    //   "password": "patel7Aish%^&*"
   
     const { emailId,password} = req.body;
   
