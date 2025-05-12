@@ -7,14 +7,27 @@
 
 const express = require("express");
 const { connectDB } = require("./config/database");
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
+const cors = require('cors');
 const app = express();
+
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 // express.json middlle ware will be activated to all thr routes  by
+var corsOptions = {
+  origin: 'http://example.com',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+// it will white list the domain name
+app.use(cors({
+  origin:'http://localhost:5173',
+  credentials: true
+}));
 
+// set the token on locla host front end check npm cors we need to set credentials true and corsOptions 
 app.use(express.json());
 app.use(cookieParser());
+
 
 const User = require("./models/user");
 

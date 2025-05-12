@@ -4,6 +4,7 @@ const { userAuth } = require("../middlewares/auth");
 const userRouter = express.Router();
 
 const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 
 const USER_SAVE_DATA = ["firstName", "age", "lastName", "skills", "photoUrl"];
 
@@ -63,16 +64,71 @@ userRouter.get("/user/request/recieved", userAuth, async (req, res) => {
   }
 });
 
-// userRouter.get("/user/feed",userAuth,(req,res)=>{
-//     try{
+userRouter.get("/user/feed",userAuth, async(req,res)=>{
+    try{
 
-//     }catch(err){
-//         res.status(400).json({
-//             message:err.message
-//         })
-//     }
+      // user should see all the user cards except 
+      // 1 his own cards
+      // 2 his liked card or his connections
+      // 3 he ignored card 
+      // 4 already sent connection request 
+      // logged in user can already be find out by re.user due to middleware
 
-// });
+      const loggedInUser = req.user;
+
+      // for feed api i need to set the limit and page 
+
+      const page = parseInt(req.query.page) || 1;
+      let limit = parseInt(req.query.limit) || 10;
+
+    limit =  limit > 50 ? 50 : limit;
+      const skip = (page -1)* limit;
+
+      // find all the connectin req  both sent and recived 
+      const connectionRequests = await ConnectionRequest.find({
+        $or:[
+          { fromUserId:loggedInUser._id},{toUserId:loggedInUser._id}
+        ]
+      }).select("fromUserId toUserId");
+
+      const hideUserFromFeed = new Set();
+
+      connectionRequests.forEach((element )=> {
+
+        hideUserFromFeed.add(element.fromUserId.toString());
+        hideUserFromFeed.add(element.toUserId.toString());
+        
+      });
+
+      console.log(hideUserFromFeed,"test");
+
+      // nin not in array
+      // array.frm to convert set datastructure into array 
+      // $ and mean and 
+      // $ne means not equalto
+      const usersForFeed = await User.find({
+        $and :[
+         { _id: { $nin : Array.from(hideUserFromFeed) }},
+         {_id:{ $ne : loggedInUser._id}}
+
+        ]
+       
+      }).select(USER_SAVE_DATA)
+      .skip(skip)
+      .limit(limit)
+
+      console.log(usersForFeed,"allusers")
+      res.json({
+        data:usersForFeed
+      })
+      // res.send(usersForFeed)
+    }catch(err){
+        res.status(400).json({
+            message:err.message
+        })
+    }
+
+});
 
 module.exports = userRouter;
 
