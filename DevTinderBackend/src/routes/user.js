@@ -6,7 +6,7 @@ const userRouter = express.Router();
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
-const USER_SAVE_DATA = ["firstName", "age", "lastName", "skills", "photoUrl"];
+const USER_SAVE_DATA = ["firstName", "age", "lastName", "skills", "photoUrl","about"];
 
 userRouter.get("/user/connection", userAuth, async (req, res) => {
   try {
@@ -49,6 +49,7 @@ userRouter.get("/user/request/recieved", userAuth, async (req, res) => {
     }).populate("fromUserId", [
       "firstName",
       "lastName",
+      "about",
       "age",
       "skills",
       "gender",
